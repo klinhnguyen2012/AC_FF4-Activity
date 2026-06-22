@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ami Connect - Back Together Lesson 2 Deck</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Kids-Friendly Rounded Typography (Matching image_9d153f.png) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f7f9fc;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+    /* Study Habits Theme Style matching image_9d153f.png */
+    .study-paper {
+      background-color: #FFFDF0;
+      background-image: radial-gradient(#e5dca5 1px, transparent 1px);
+      background-size: 24px 24px;
+      position: relative;
+    }
+    /* Top Binder-Ring Hole Effect */
+    .notebook-binder::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 5%;
+      right: 5%;
+      height: 14px;
+      background-image: radial-gradient(circle, #e2e8f0 6px, transparent 7px);
+      background-size: 32px 100%;
+      opacity: 0.8;
+    }
+    /* 16:9 Aspect Ratio Lock */
+    .slide-aspect-ratio {
+      aspect-ratio: 16 / 9;
+    }
+    /* Ink Canvas setup */
+    #drawing-canvas {
+      pointer-events: none;
+    }
+    #drawing-canvas.drawing-active {
+      pointer-events: auto;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>') 0 20, auto;
+    }
+    /* Cut-out sticker styling for Logo (matching image_9d1d5f.png styling prompt) */
+    .logo-sticker {
+      filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1)) drop-shadow(0 0 0 5px #ffffff);
+    }
+    /* Bounce feedback for correct buttons */
+    .success-bounce {
+      animation: bounce-scale 0.5s ease-in-out;
+    }
+    @keyframes bounce-scale {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col justify-between overflow-hidden select-none">
+
+  <!-- Toast Notification Panel -->
+  <div id="toast-container" class="fixed top-20 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Top Navigation Header / Teacher Console -->
+  <header class="bg-white shadow-md px-6 py-3 flex items-center justify-between z-10 border-b border-yellow-100">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2">
+        <span class="w-3 h-3 bg-sky-500 rounded-full animate-pulse"></span>
+        <span class="font-bold text-gray-800 text-sm tracking-wide font-display">LIVE CLASSROOM DECK</span>
+      </div>
+      <div class="h-4 w-px bg-gray-300"></div>
+      <div class="text-sm text-gray-500">
+        Topic: <span class="font-bold text-sky-800">Starter - Back Together 2</span>
+      </div>
+    </div>
+
+    <!-- Active Presentation Controls -->
+    <div class="flex items-center space-x-3">
+      <!-- Draw Tool Button -->
+      <button id="btn-draw" class="flex items-center space-x-2 bg-slate-100 hover:bg-sky-100 hover:text-sky-600 px-4 py-2 rounded-full text-slate-700 font-bold transition-all text-sm border border-slate-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        <span>Board Pen</span>
+      </button>
+
+      <!-- Clear Drawings Button -->
+      <button id="btn-clear-draw" class="flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-full text-slate-500 hover:text-slate-800 transition-all text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>Clear Ink</span>
+      </button>
+
+      <div class="h-4 w-px bg-gray-300"></div>
+
+      <!-- Present Mode / Fullscreen -->
+      <button onclick="toggleFullscreen()" class="flex items-center space-x-2 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full font-bold transition-all text-sm shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+        </svg>
+        <span>Fullscreen</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Slide Viewer Area -->
+  <main class="flex-grow flex items-center justify-center p-6 relative">
+    
+    <!-- Left Navigation Button -->
+    <button onclick="prevSlide()" class="absolute left-4 bg-white hover:bg-sky-100 text-slate-700 hover:text-sky-700 p-4 rounded-full shadow-lg border border-slate-200 transition-all z-20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <!-- Slide Container (Study Habits Themed Notebook Frame) -->
+    <div id="slide-viewport" class="slide-aspect-ratio w-full max-w-5xl bg-white rounded-3xl shadow-2xl border-8 border-yellow-300 overflow-hidden relative flex flex-col justify-between study-paper notebook-binder select-none transition-all duration-300">
+      
+      <!-- Vector canvas overlay for drawing annotations dynamically -->
+      <canvas id="drawing-canvas" class="absolute inset-0 w-full h-full z-30"></canvas>
+
+      <!-- Active Slide Content Injection Point -->
+      <div id="slide-content-root" class="w-full h-full p-12 flex flex-col justify-between relative z-10 pt-16">
+        <!-- Content will be rendered dynamically by JavaScript -->
+      </div>
+
+    </div>
+
+    <!-- Right Navigation Button -->
+    <button onclick="nextSlide()" class="absolute right-4 bg-white hover:bg-sky-100 text-slate-700 hover:text-sky-700 p-4 rounded-full shadow-lg border border-slate-200 transition-all z-20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </main>
+
+  <!-- Bottom Navigation Carousel Strip -->
+  <footer class="bg-slate-950 text-white p-4 flex flex-col space-y-2 z-10">
+    <div class="flex items-center justify-between text-xs px-2 text-slate-400">
+      <span>STUDY GOALS LESSON 2 THUMBNAILS</span>
+      <span id="slide-counter-badge">Slide 1 of 5</span>
+    </div>
+    
+    <div class="flex space-x-3 overflow-x-auto pb-1 px-1">
+      <div id="thumbnail-strip" class="flex space-x-3"></div>
+    </div>
+  </footer>
+
+  <script>
+    // Exact Vector reproduction of Ami Connect Logo (image_9d1d5f.png)
+    // Structured with a thick die-cut white outline sticker appearance.
+    const amiLogoStickerSVG = `
+      <div class="logo-sticker transform hover:scale-105 transition-all">
+        <svg class="h-14 w-auto bg-white p-2.5 rounded-2xl shadow-sm border border-slate-100" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- The Bold Navy letter 'A' -->
+          <path d="M42 75 L62 25 L82 75" stroke="#122A47" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M52 56 L72 56" stroke="#122A47" stroke-width="12" stroke-linecap="round" fill="none"/>
+          
+          <!-- Iconic Red Arching Swoosh -->
+          <path d="M15 62 Q75 14 140 48" stroke="#E53E3E" stroke-width="11" stroke-linecap="round" fill="none"/>
+          
+          <!-- Word "mi" -->
+          <text x="88" y="70" font-family="'Fredoka', sans-serif" font-weight="800" font-size="46" fill="#122A47">mi</text>
+          
+          <!-- Blue Shiny Star Sticker (replacing dot of 'i') -->
+          <path d="M125 18 L129 25 L137 26 L131 32 L133 40 L125 36 L117 40 L119 32 L113 26 L121 25 Z" fill="#3FA9F5" stroke="#2563eb" stroke-width="1.5" />
+          
+          <!-- Subtext Logo branding: "Connect" -->
+          <text x="65" y="86" font-family="'Quicksand', sans-serif" font-weight="700" font-size="16" fill="#122A47" letter-spacing="1.2">Connect</text>
+        </svg>
+      </div>
+    `;
+
+    // --- SLIDES DATABASE & LESSON STATE ---
+    const slidesData = [
+      {
+        id: 1,
+        type: "cover",
+        title: "STARTER: BACK TOGETHER 2",
+        subtitle: "Interactive Lesson Activities",
+        badge: "Lesson 3 & 4",
+        theme: "study-habits"
+      },
+      {
+        id: 2,
+        type: "game1",
+        title: "GAME 1: SPELLING & WEEKEND PLANS QUEST",
+        subtitle: "Match the correct ending sound (mp, nt, ld, lt, nd) to reveal the weekend action!",
+        challenges: [
+          { 
+            sentence: "Next Saturday, she is going to sleep in a te____", 
+            blend: "nt", 
+            options: ["mp", "nt", "ld", "lt", "nd"],
+            selected: null,
+            imageHint: "⛺", 
+            fullWord: "tent"
+          },
+          { 
+            sentence: "He is going to secure his trousers with a be____", 
+            blend: "lt", 
+            options: ["nt", "lt", "nd", "mp", "ld"],
+            selected: null,
+            imageHint: "🎗️", 
+            fullWord: "belt"
+          },
+          { 
+            sentence: "We are going to walk on clean, white sa____", 
+            blend: "nd", 
+            options: ["ld", "lt", "nd", "nt", "mp"],
+            selected: null,
+            imageHint: "🏖️", 
+            fullWord: "sand"
+          },
+          { 
+            sentence: "She is going to light a yellow la____", 
+            blend: "mp", 
+            options: ["mp", "nt", "ld", "lt", "nd"],
+            selected: null,
+            imageHint: "💡", 
+            fullWord: "lamp"
+          }
+        ]
+      },
+      {
+        id: 3,
+        type: "game2",
+        title: "GAME 2: TIME DETECTIVE QUEST",
+        subtitle: "Match each analog clock face with the correct written time description!",
+        clocks: [
+          { id: 1, h: 6, m: 30, text: "Half past six", correctIndex: 0 },
+          { id: 2, h: 9, m: 15, text: "Quarter past nine", correctIndex: 1 },
+          { id: 3, h: 8, m: 0, text: "Eight o'clock", correctIndex: 2 },
+          { id: 4, h: 10, m: 10, text: "Ten ten", correctIndex: 3 }
+        ],
+        matches: [null, null, null, null], // Users match them
+        answersRevealed: false
+      },
+      {
+        id: 4,
+        type: "game3",
+        title: "GAME 3: COMPARISON SUPERSTAR",
+        subtitle: "Help choose the correct comparative (-er) or superlative (-est) adjective!",
+        items: [
+          {
+            prompt: "1. Leo's skateboard is __________ than the bicycle.",
+            options: ["fast", "faster", "fastest"],
+            correct: "faster",
+            selected: null,
+            illustration: "🛹 > 🚲"
+          },
+          {
+            prompt: "2. Out of all world nations, Russia is the __________.",
+            options: ["big", "bigger", "biggest"],
+            correct: "biggest",
+            selected: null,
+            illustration: "🗺️ 👑"
+          },
+          {
+            prompt: "3. Max is __________ than Holly.",
+            options: ["tall", "taller", "tallest"],
+            correct: "taller",
+            selected: null,
+            illustration: "🧍‍♂️ > 👧"
+          }
+        ]
+      },
+      {
+        id: 5,
+        type: "congrats",
+        title: "FANTASTIC JOB!",
+        subtitle: "You completed Starter: Back Together 2!",
+        badge: "Class Champion"
+      }
+    ];
+
+    let currentSlideIndex = 0;
+
+    // --- TOAST NOTIFICATION SYSTEM (Safe fallback for alerts) ---
+    function showNotification(message, type = 'info') {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `transform translate-y-2 opacity-0 transition-all duration-300 ease-out flex items-center space-x-2 px-4 py-3 rounded-xl shadow-lg border text-sm font-bold pointer-events-auto ${
+        type === 'error' 
+          ? 'bg-red-50 border-red-200 text-red-800' 
+          : 'bg-sky-50 border-sky-200 text-sky-800'
+      }`;
+      
+      toast.innerHTML = `
+        <span class="text-base">${type === 'error' ? '⚠️' : '✨'}</span>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // --- PRESENTATION MODE / FULLSCREEN ---
+    function toggleFullscreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().then(() => {
+          showNotification("Fullscreen mode launched.", "info");
+        }).catch(err => {
+          showNotification(`Display adjust requested inside preview container.`, 'info');
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => {
+            showNotification("Exited fullscreen mode.", "info");
+          });
+        }
+      }
+    }
+
+    // --- DRAWING CHALKBOARD CANVAS ENGINE ---
+    const canvas = document.getElementById("drawing-canvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawingActive = false;
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const rectWidth = rect.width || 1024;
+      const rectHeight = rect.height || 576;
+      const scaleX = canvas.width / rectWidth;
+      const scaleY = canvas.height / rectHeight;
+      
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      }
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function initCanvas() {
+      const viewport = document.getElementById("slide-viewport");
+      if (!viewport) return;
+      canvas.width = viewport.clientWidth || 1024;
+      canvas.height = viewport.clientHeight || 576;
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#3b82f6"; // Playful Blue chalk color
+    }
+
+    function startDrawing(e) {
+      if (!isDrawingActive) return;
+      isDrawing = true;
+      const coords = getCanvasCoordinates(e);
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const coords = getCanvasCoordinates(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    // Connect chalkboard pen controls
+    const btnDraw = document.getElementById("btn-draw");
+    const btnClear = document.getElementById("btn-clear-draw");
+
+    btnDraw.addEventListener("click", () => {
+      isDrawingActive = !isDrawingActive;
+      if (isDrawingActive) {
+        canvas.classList.add("drawing-active");
+        btnDraw.classList.replace("bg-slate-100", "bg-sky-500");
+        btnDraw.classList.add("text-white");
+        showNotification("Board Pen Active! Draw annotations anywhere.", "info");
+      } else {
+        canvas.classList.remove("drawing-active");
+        btnDraw.classList.replace("bg-sky-500", "bg-slate-100");
+        btnDraw.classList.remove("text-white");
+        showNotification("Pen deactivated.", "info");
+      }
+    });
+
+    btnClear.addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      showNotification("Scribbles cleared!", "info");
+    });
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
+
+    canvas.addEventListener("touchstart", (e) => startDrawing(e));
+    canvas.addEventListener("touchmove", (e) => draw(e), { passive: false });
+    canvas.addEventListener("touchend", stopDrawing);
+
+    window.addEventListener("resize", () => {
+      initCanvas();
+    });
+
+    // --- INTERACTIVE SLIDE GAMES CONTROLLERS ---
+    function selectGame1Option(challengeIdx, optionStr) {
+      if (isDrawingActive) return;
+      const challenge = slidesData[currentSlideIndex].challenges[challengeIdx];
+      challenge.selected = optionStr;
+      
+      if (optionStr === challenge.blend) {
+        showNotification(`Correct! That makes '${challenge.fullWord}'!`, "success");
+      } else {
+        showNotification(`Try again! Focus on the sound.`, "error");
+      }
+      renderCurrentSlide();
+    }
+
+    function selectClockMatch(clockIdx, optionText) {
+      if (isDrawingActive) return;
+      const slide = slidesData[currentSlideIndex];
+      slide.matches[clockIdx] = optionText;
+      
+      const clock = slide.clocks[clockIdx];
+      if (optionText === clock.text) {
+        showNotification("Brilliant! Perfect time match.", "success");
+      } else {
+        showNotification("Not quite! Look closer at the hour hand.", "error");
+      }
+      renderCurrentSlide();
+    }
+
+    function selectGame3Choice(itemIdx, chosenVal) {
+      if (isDrawingActive) return;
+      const item = slidesData[currentSlideIndex].items[itemIdx];
+      item.selected = chosenVal;
+      
+      if (chosenVal === item.correct) {
+        showNotification("Spot on grammar!", "success");
+      } else {
+        showNotification("Double-check comparisons (-er / -est).", "error");
+      }
+      renderCurrentSlide();
+    }
+
+    function revealAllOnSlide() {
+      const slide = slidesData[currentSlideIndex];
+      if (slide.type === "game1") {
+        slide.challenges.forEach(ch => ch.selected = ch.blend);
+      } else if (slide.type === "game2") {
+        slide.clocks.forEach((cl, i) => slide.matches[i] = cl.text);
+      } else if (slide.type === "game3") {
+        slide.items.forEach(it => it.selected = it.correct);
+      }
+      renderCurrentSlide();
+      showNotification("All answers revealed!", "success");
+    }
+
+    // --- HELPER: VECTOR ANALOG CLOCK FACE GENERATOR ---
+    function generateClockSVG(hour, minute, size = 120) {
+      const hrAngle = (hour * 30) + (minute * 0.5);
+      const minAngle = minute * 6;
+      return `
+        <svg width="${size}" height="${size}" viewBox="0 0 100 100" class="mx-auto transform transition-all hover:scale-105 duration-300">
+          <!-- Outer Rim -->
+          <circle cx="50" cy="50" r="45" stroke="#1e293b" stroke-width="4.5" fill="#ffffff" />
+          <circle cx="50" cy="50" r="40" stroke="#f1f5f9" stroke-width="2" fill="none" />
+          
+          <!-- Clock ticks -->
+          ${[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(angle => {
+            const x1 = 50 + 35 * Math.cos((angle - 90) * Math.PI / 180);
+            const y1 = 50 + 35 * Math.sin((angle - 90) * Math.PI / 180);
+            const x2 = 50 + 38 * Math.cos((angle - 90) * Math.PI / 180);
+            const y2 = 50 + 38 * Math.sin((angle - 90) * Math.PI / 180);
+            return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#475569" stroke-width="2" stroke-linecap="round"/>`;
+          }).join('')}
+
+          <!-- Hours labels (Core reference points: 12, 3, 6, 9) -->
+          <text x="50" y="20" font-family="'Fredoka', sans-serif" font-size="9" font-weight="bold" fill="#1e293b" text-anchor="middle">12</text>
+          <text x="82" y="53" font-family="'Fredoka', sans-serif" font-size="9" font-weight="bold" fill="#1e293b" text-anchor="middle">3</text>
+          <text x="50" y="86" font-family="'Fredoka', sans-serif" font-size="9" font-weight="bold" fill="#1e293b" text-anchor="middle">6</text>
+          <text x="18" y="53" font-family="'Fredoka', sans-serif" font-size="9" font-weight="bold" fill="#1e293b" text-anchor="middle">9</text>
+
+          <!-- Hour Hand -->
+          <line x1="50" y1="50" x2="${50 + 22 * Math.cos((hrAngle - 90) * Math.PI / 180)}" y2="${50 + 22 * Math.sin((hrAngle - 90) * Math.PI / 180)}" stroke="#0f172a" stroke-width="4.5" stroke-linecap="round" />
+          
+          <!-- Minute Hand -->
+          <line x1="50" y1="50" x2="${50 + 31 * Math.cos((minAngle - 90) * Math.PI / 180)}" y2="${50 + 31 * Math.sin((minAngle - 90) * Math.PI / 180)}" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+          
+          <!-- Center Pin -->
+          <circle cx="50" cy="50" r="4" fill="#ef4444" />
+        </svg>
+      `;
+    }
+
+    // --- MAIN DYNAMIC RENDERER ---
+    function renderCurrentSlide() {
+      const slide = slidesData[currentSlideIndex];
+      const root = document.getElementById("slide-content-root");
+      if (!root) return;
+
+      // Update slide navigation details
+      document.getElementById("slide-counter-badge").textContent = `Slide ${currentSlideIndex + 1} of ${slidesData.length}`;
+
+      if (slide.type === "cover") {
+        root.innerHTML = `
+          <!-- Logo & Header details -->
+          <div class="flex justify-between items-start w-full">
+            <span class="bg-amber-100 border border-amber-300 text-amber-800 px-4 py-1.5 rounded-full text-sm font-bold tracking-widest font-display shadow-sm uppercase animate-pulse">
+              ⭐ ${slide.badge}
+            </span>
+            ${amiLogoStickerSVG}
+          </div>
+
+          <!-- Cover Main Block -->
+          <div class="flex-grow flex items-center justify-between mt-4 w-full">
+            <div class="w-1/2 flex justify-center items-center">
+              <div class="relative w-64 h-64 bg-yellow-100 rounded-3xl flex items-center justify-center border-4 border-dashed border-yellow-400 shadow-lg transform rotate-2">
+                <div class="text-[120px] filter drop-shadow-xl select-none leading-none">🎒</div>
+                <div class="absolute bottom-3 right-6 text-5xl transform -rotate-12">⏰</div>
+              </div>
+            </div>
+
+            <div class="w-1/2 flex flex-col items-start space-y-4 pr-4">
+              <span class="text-sky-500 font-extrabold text-2xl tracking-widest font-display">STARTER:</span>
+              <h1 class="text-5xl font-extrabold text-slate-800 leading-tight tracking-wide font-display">
+                BACK TOGETHER!<br/>
+                <span class="text-amber-500 underline decoration-sky-300 decoration-wavy">LESSON 2 ACTIVITY</span>
+              </h1>
+              <p class="text-slate-500 text-lg font-bold">Interactive Learning Challenges</p>
+            </div>
+          </div>
+
+          <!-- Slide footer agenda design dots -->
+          <div class="flex space-x-2 mt-4">
+            <span class="text-xs bg-slate-200 text-slate-700 px-3 py-1 rounded-md font-bold">1. Phonics Plans</span>
+            <span class="text-xs bg-slate-200 text-slate-700 px-3 py-1 rounded-md font-bold">2. Time Match</span>
+            <span class="text-xs bg-slate-200 text-slate-700 px-3 py-1 rounded-md font-bold">3. Super Comparatives</span>
+          </div>
+        `;
+      }
+
+      else if (slide.type === "game1") {
+        let listHtml = "";
+        slide.challenges.forEach((item, index) => {
+          const isCorrect = item.selected === item.blend;
+          const isSelected = item.selected !== null;
+          
+          listHtml += `
+            <div class="bg-white/90 border-2 ${isSelected ? (isCorrect ? 'border-emerald-400 bg-emerald-50/20' : 'border-red-300 bg-red-50/20') : 'border-slate-200'} rounded-2xl p-4 shadow-sm flex items-center justify-between transition-all">
+              <div class="flex items-center space-x-4 w-3/5">
+                <span class="text-4xl transform hover:scale-110 transition-transform">${item.imageHint}</span>
+                <div class="flex flex-col">
+                  <!-- Custom visual prompt sentences -->
+                  <p class="font-extrabold text-slate-800 text-base leading-relaxed">
+                    ${item.sentence.replace("____", isCorrect 
+                      ? `<span class="text-emerald-600 bg-emerald-100 px-2 rounded-lg underline border-2 border-dashed border-emerald-300 font-display">${item.blend}</span>` 
+                      : `<span class="text-slate-300 px-2 border-b-2 border-dashed border-slate-300">____</span>`
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Spell Options -->
+              <div class="flex items-center space-x-1">
+                ${item.options.map(opt => {
+                  const optSelected = item.selected === opt;
+                  let btnColor = "bg-slate-100 hover:bg-slate-200 text-slate-700";
+                  if (optSelected) {
+                    btnColor = opt === item.blend ? "bg-emerald-500 text-white" : "bg-red-500 text-white";
+                  }
+                  return `
+                    <button onclick="selectGame1Option(${index}, '${opt}')" 
+                      class="px-3 py-1.5 rounded-lg text-sm font-extrabold transition-all ${btnColor}">
+                      ${opt}
+                    </button>
+                  `;
+                }).join('')}
+                <div class="w-8 flex justify-center text-xl">
+                  ${isSelected ? (isCorrect ? '✅' : '❌') : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        root.innerHTML = `
+          <div class="flex justify-between items-start w-full">
+            <div class="flex flex-col">
+              <span class="bg-amber-100 text-amber-800 px-4 py-1.5 rounded-full text-sm font-bold font-display uppercase shadow-sm">
+                🎯 GAME 1: PHONICS BLENDS & PLANS
+              </span>
+              <p class="text-slate-500 text-xs mt-1 font-bold">Pick the accurate phonetic sound block to finish the plan sentences.</p>
+            </div>
+            <button onclick="revealAllOnSlide()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all">
+              Reveal All
+            </button>
+          </div>
+
+          <!-- Core layout container -->
+          <div class="grid grid-cols-2 gap-4 mt-4 flex-grow">
+            ${listHtml}
+          </div>
+        `;
+      }
+
+      else if (slide.type === "game2") {
+        let clockContainerHtml = "";
+        
+        slide.clocks.forEach((clock, index) => {
+          const userChoice = slide.matches[index];
+          const isCorrect = userChoice === clock.text;
+          const isSelected = userChoice !== null;
+
+          clockContainerHtml += `
+            <div class="bg-white/85 border-2 ${isSelected ? (isCorrect ? 'border-emerald-400 bg-emerald-50/20' : 'border-red-300 bg-red-50/20') : 'border-slate-200'} rounded-2xl p-4 shadow-sm flex flex-col justify-between items-center relative transition-all">
+              
+              <!-- Core Dynamic Analog clock generator -->
+              <div class="my-2">
+                ${generateClockSVG(clock.h, clock.m, 110)}
+              </div>
+
+              <!-- Interactive selector container -->
+              <div class="w-full flex flex-col items-center mt-2 space-y-1">
+                ${slide.clocks.map(optClock => {
+                  const isCurrentSelection = userChoice === optClock.text;
+                  let optColor = "bg-slate-50 hover:bg-sky-50 text-slate-700 border-slate-200";
+                  
+                  if (isCurrentSelection) {
+                    optColor = optClock.text === clock.text ? "bg-emerald-500 text-white border-emerald-400" : "bg-red-500 text-white border-red-400";
+                  }
+
+                  return `
+                    <button onclick="selectClockMatch(${index}, '${optClock.text}')" 
+                      class="w-full py-1 text-[11px] font-black tracking-wide rounded-md border transition-all truncate text-center ${optColor}">
+                      ${optClock.text}
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Top floating status indicator badge -->
+              <div class="absolute top-2 right-2 text-sm">
+                ${isSelected ? (isCorrect ? '✨' : '❓') : ''}
+              </div>
+            </div>
+          `;
+        });
+
+        root.innerHTML = `
+          <div class="flex justify-between items-start w-full">
+            <div class="flex flex-col">
+              <span class="bg-sky-100 text-sky-800 px-4 py-1.5 rounded-full text-sm font-bold font-display uppercase shadow-sm">
+                ⏰ GAME 2: CLOCK MATCH EXPLORER
+              </span>
+              <p class="text-slate-500 text-xs mt-1 font-bold">Investigate each analog clock face and select the appropriate matching time details!</p>
+            </div>
+            <button onclick="revealAllOnSlide()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all">
+              Reveal Clocks
+            </button>
+          </div>
+
+          <!-- Clock interface columns -->
+          <div class="grid grid-cols-4 gap-4 mt-4 flex-grow">
+            ${clockContainerHtml}
+          </div>
+        `;
+      }
+
+      else if (slide.type === "game3") {
+        let grammarHtml = "";
+        
+        slide.items.forEach((item, index) => {
+          const isCorrect = item.selected === item.correct;
+          const isSelected = item.selected !== null;
+
+          grammarHtml += `
+            <div class="bg-white/90 border-2 ${isSelected ? (isCorrect ? 'border-emerald-400 bg-emerald-50/20' : 'border-red-300 bg-red-50/20') : 'border-slate-200'} rounded-2xl p-4 shadow-sm flex items-center justify-between transition-all">
+              <div class="flex items-center space-x-6 w-2/3">
+                <span class="bg-sky-100 text-sky-700 font-extrabold px-3 py-2 rounded-xl text-lg">${item.illustration}</span>
+                <div class="flex flex-col">
+                  <p class="font-extrabold text-slate-800 text-base leading-snug">
+                    ${item.prompt.replace("__________", isCorrect 
+                      ? `<span class="text-emerald-600 bg-emerald-50 border-2 border-emerald-300 border-dashed px-3 py-1 rounded-lg font-display">${item.correct}</span>` 
+                      : `<span class="text-slate-300 font-semibold px-4 border-b-2 border-dashed border-slate-300">__________</span>`
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Options Selection -->
+              <div class="flex items-center space-x-2">
+                ${item.options.map(opt => {
+                  const optSelected = item.selected === opt;
+                  let optColor = "bg-slate-100 hover:bg-slate-200 text-slate-700";
+                  if (optSelected) {
+                    optColor = opt === item.correct ? "bg-emerald-500 text-white" : "bg-red-500 text-white";
+                  }
+                  return `
+                    <button onclick="selectGame3Choice(${index}, '${opt}')" 
+                      class="px-4 py-1.5 rounded-xl text-xs font-black transition-all ${optColor}">
+                      ${opt.toUpperCase()}
+                    </button>
+                  `;
+                }).join('')}
+                <div class="w-8 flex justify-center text-xl">
+                  ${isSelected ? (isCorrect ? '🎉' : '❌') : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        root.innerHTML = `
+          <div class="flex justify-between items-start w-full">
+            <div class="flex flex-col">
+              <span class="bg-indigo-100 text-indigo-800 px-4 py-1.5 rounded-full text-sm font-bold font-display uppercase shadow-sm">
+                ⭐ GAME 3: COMPARATIVE CHAMPIONS
+              </span>
+              <p class="text-slate-500 text-xs mt-1 font-bold">Read the classroom statements and pick the accurate adjective comparisons!</p>
+            </div>
+            <button onclick="revealAllOnSlide()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all">
+              Reveal Answers
+            </button>
+          </div>
+
+          <div class="flex flex-col space-y-3 mt-4 flex-grow justify-center">
+            ${grammarHtml}
+          </div>
+        `;
+      }
+
+      else if (slide.type === "congrats") {
+        root.innerHTML = `
+          <div class="flex justify-end w-full">
+            ${amiLogoStickerSVG}
+          </div>
+
+          <div class="flex-grow flex flex-col items-center justify-center text-center space-y-6">
+            <!-- Shiny 3D Style Trophy Illustration -->
+            <div class="relative transform hover:scale-110 transition-transform duration-500">
+              <div class="text-[130px] filter drop-shadow-2xl animate-bounce">🏆</div>
+              <div class="absolute -top-3 -left-3 text-4xl animate-pulse">🌟</div>
+              <div class="absolute -bottom-3 -right-3 text-4xl animate-pulse delay-300">⚡</div>
+            </div>
+
+            <div class="space-y-2">
+              <h1 class="text-6xl font-extrabold text-slate-800 tracking-wide font-display">
+                <span class="text-amber-500">YOU DID</span> IT!
+              </h1>
+              <p class="text-2xl text-sky-500 font-extrabold font-display uppercase tracking-wider">Fantastic Classroom Performance!</p>
+            </div>
+            
+            <p class="text-slate-500 font-bold max-w-md">You solved all time, spelling, and grammar quests. Keep up the brilliant school work!</p>
+          </div>
+        `;
+      }
+
+      renderThumbnails();
+    }
+
+    // --- THUMBNAIL LIST MANAGER ---
+    function renderThumbnails() {
+      const container = document.getElementById("thumbnail-strip");
+      if (!container) return;
+      container.innerHTML = "";
+
+      slidesData.forEach((slide, idx) => {
+        let titleText = slide.title;
+        if (slide.type === "cover") titleText = "Cover Page";
+        if (slide.type === "congrats") titleText = "Awesome Completion";
+
+        const isActive = idx === currentSlideIndex;
+
+        container.innerHTML += `
+          <button onclick="jumpToSlide(${idx})" class="flex-shrink-0 w-44 h-24 rounded-xl overflow-hidden border-4 ${isActive ? 'border-amber-400 scale-95 ring-2 ring-amber-400' : 'border-slate-800 hover:border-slate-600'} bg-slate-900 p-2 flex flex-col justify-between text-left transition-all">
+            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-extrabold">Slide ${idx + 1}</span>
+            <span class="text-xs text-white font-extrabold truncate w-full font-display">${titleText}</span>
+            <div class="h-1 w-full bg-slate-800 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-sky-400" style="width: ${((idx + 1) / slidesData.length) * 100}%"></div>
+            </div>
+          </button>
+        `;
+      });
+    }
+
+    // --- SLIDES NAVIGATION UTILITIES ---
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        currentSlideIndex--;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCurrentSlide();
+      } else {
+        showNotification("This is the first slide!", "info");
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlideIndex < slidesData.length - 1) {
+        currentSlideIndex++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCurrentSlide();
+      } else {
+        showNotification("You've completed the presentation!", "success");
+      }
+    }
+
+    function jumpToSlide(index) {
+      if (index >= 0 && index < slidesData.length) {
+        currentSlideIndex = index;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCurrentSlide();
+      }
+    }
+
+    // Keyboard arrow controls support
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "ArrowRight") nextSlide();
+    });
+
+    // --- LOAD ACTIONS ---
+    window.onload = () => {
+      initCanvas();
+      renderCurrentSlide();
+      showNotification("Welcome back to Starter: Lesson 2!", "success");
+    };
+  </script>
+</body>
+</html>
