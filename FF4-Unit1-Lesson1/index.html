@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ami Connect - FF4 Unit 1 Lesson 1 Activity Deck</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Kids-Friendly Rounded Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background-color: #f3f6fa;
+    }
+    h1, h2, h3, .font-display {
+      font-family: 'Fredoka', sans-serif;
+    }
+    /* Study Habits Notebook Theme Style matching Picture 1 (image_9d28a2.png) */
+    .study-paper {
+      background-color: #FFFDF0;
+      background-image: radial-gradient(#ebdca2 1.2px, transparent 1.2px);
+      background-size: 28px 28px;
+      position: relative;
+    }
+    /* Top Ring Binder Hole Effect */
+    .notebook-binder::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 6%;
+      right: 6%;
+      height: 16px;
+      background-image: radial-gradient(circle, #cbd5e1 7px, transparent 8px);
+      background-size: 36px 100%;
+      opacity: 0.85;
+    }
+    /* Fixed 16:9 Aspect Ratio */
+    .slide-aspect-ratio {
+      aspect-ratio: 16 / 9;
+    }
+    /* Whiteboard Annotations setup */
+    #drawing-canvas {
+      pointer-events: none;
+    }
+    #drawing-canvas.drawing-active {
+      pointer-events: auto;
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%23f97316" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>') 0 20, auto;
+    }
+    /* Premium Cut-Out Die-Cut Sticker Effect for Logo matching image_9d28a7.png instructions */
+    .logo-sticker {
+      filter: drop-shadow(0px 6px 8px rgba(18, 42, 71, 0.15)) drop-shadow(0 0 0 6px #ffffff);
+    }
+    /* Bounce scale for selection responses */
+    .tap-bounce:active {
+      transform: scale(0.95);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col justify-between overflow-hidden select-none">
+
+  <!-- Toast Feedback Panel -->
+  <div id="toast-container" class="fixed top-20 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- Top Navigation Header / Teacher Desk Console -->
+  <header class="bg-white shadow-sm px-6 py-3 flex items-center justify-between z-10 border-b border-orange-100">
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2">
+        <span class="w-3 h-3 bg-orange-500 rounded-full animate-pulse"></span>
+        <span class="font-bold text-slate-800 text-sm tracking-wide font-display">AMI INTERACTIVE IMMERSIVE</span>
+      </div>
+      <div class="h-4 w-px bg-slate-300"></div>
+      <div class="text-sm text-slate-500 font-bold">
+        Topic: <span class="text-sky-600">FF4 [Unit 1 - Lesson 1] - The Food Here is Great!</span>
+      </div>
+    </div>
+
+    <!-- Live Presenter Whiteboard Controls -->
+    <div class="flex items-center space-x-3">
+      <!-- Draw Tool Button -->
+      <button id="btn-draw" class="tap-bounce flex items-center space-x-2 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 px-4 py-2 rounded-full text-slate-700 font-bold transition-all text-sm border border-slate-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+        </svg>
+        <span>Board Marker</span>
+      </button>
+
+      <!-- Clear Drawings Button -->
+      <button id="btn-clear-draw" class="tap-bounce flex items-center space-x-2 bg-slate-100 hover:bg-slate-200 px-3 py-2 rounded-full text-slate-500 hover:text-slate-800 transition-all text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>Clear Ink</span>
+      </button>
+
+      <div class="h-4 w-px bg-slate-300"></div>
+
+      <!-- Fullscreen view controller -->
+      <button onclick="toggleFullscreen()" class="tap-bounce flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-full font-bold transition-all text-sm shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+        </svg>
+        <span>Present Mode</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Slide Viewing Theater -->
+  <main class="flex-grow flex items-center justify-center p-6 relative">
+    
+    <!-- Left Navigation Arrow Button -->
+    <button onclick="prevSlide()" class="tap-bounce absolute left-6 bg-white hover:bg-orange-50 text-slate-700 hover:text-orange-600 p-4 rounded-full shadow-lg border border-slate-200 transition-all z-20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+
+    <!-- Slide Container (Study Habits Style Premium Card Frame) -->
+    <div id="slide-viewport" class="slide-aspect-ratio w-full max-w-5xl bg-white rounded-3xl shadow-2xl border-8 border-yellow-300 overflow-hidden relative flex flex-col justify-between study-paper notebook-binder select-none transition-all duration-300">
+      
+      <!-- Vector canvas overlay for chalkboard annotation feature -->
+      <canvas id="drawing-canvas" class="absolute inset-0 w-full h-full z-30"></canvas>
+
+      <!-- Active Slide Content Mounting Root -->
+      <div id="slide-content-root" class="w-full h-full p-12 flex flex-col justify-between relative z-10 pt-16">
+        <!-- Content gets loaded via active Javascript arrays -->
+      </div>
+
+    </div>
+
+    <!-- Right Navigation Arrow Button -->
+    <button onclick="nextSlide()" class="tap-bounce absolute right-6 bg-white hover:bg-orange-50 text-slate-700 hover:text-orange-600 p-4 rounded-full shadow-lg border border-slate-200 transition-all z-20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </main>
+
+  <!-- Bottom Carousel Slide Thumbnail Navigation Bar -->
+  <footer class="bg-slate-900 text-white p-4 flex flex-col space-y-2 z-10">
+    <div class="flex items-center justify-between text-xs px-2 text-slate-400">
+      <span>UNIT 1 - LESSON 1 SLIDE MAP</span>
+      <span id="slide-counter-badge">Slide 1 of 5</span>
+    </div>
+    
+    <div class="flex space-x-3 overflow-x-auto pb-1 px-1 custom-scrollbar">
+      <div id="thumbnail-strip" class="flex space-x-3"></div>
+    </div>
+  </footer>
+
+  <script>
+    // Exact Custom cut-out sticker component recreation of original Ami Connect Logo (image_9d28a7.png)
+    const amiLogoStickerSVG = `
+      <div class="logo-sticker transform hover:scale-105 transition-all duration-300">
+        <svg class="h-16 w-auto bg-white p-3 rounded-2xl border border-slate-100" viewBox="0 0 260 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- The Bold Navy letter 'A' -->
+          <path d="M42 75 L62 25 L82 75" stroke="#122A47" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M52 56 L72 56" stroke="#122A47" stroke-width="12" stroke-linecap="round" fill="none"/>
+          
+          <!-- Iconic Red Arching Swoosh -->
+          <path d="M15 62 Q75 14 140 48" stroke="#E53E3E" stroke-width="11" stroke-linecap="round" fill="none"/>
+          
+          <!-- Word "mi" -->
+          <text x="88" y="70" font-family="'Fredoka', sans-serif" font-weight="800" font-size="46" fill="#122A47">mi</text>
+          
+          <!-- Blue Shiny Star Sticker (replacing dot of 'i') -->
+          <path d="M125 18 L129 25 L137 26 L131 32 L133 40 L125 36 L117 40 L119 32 L113 26 L121 25 Z" fill="#3FA9F5" stroke="#2563eb" stroke-width="1.5" />
+          
+          <!-- Subtext Logo branding: "Connect" -->
+          <text x="65" y="86" font-family="'Quicksand', sans-serif" font-weight="700" font-size="16" fill="#122A47" letter-spacing="1.2">Connect</text>
+        </svg>
+      </div>
+    `;
+
+    // --- PRESENTATION DATABASE STATS & ACTIVITY SCHEMES ---
+    // Ground-up interactive upgrade of slides matching textbook rules from image_9d2c47.jpg & image_9d7e23.jpg
+    const slidesData = [
+      {
+        id: 1,
+        type: "cover",
+        title: "UNIT 1: THE FOOD HERE IS GREAT!",
+        subtitle: "Lesson One Words & Grammar Activities",
+        badge: "FF4 - Lesson 1 & 2",
+        theme: "study-habits"
+      },
+      {
+        id: 2,
+        type: "game1",
+        title: "ACTIVITY 1: RESTAURANT VOCAB MATCH",
+        subtitle: "Match the correct restaurant words to their meanings and matching pictures!",
+        selectedWord: null,
+        matches: {}, // targetWordId -> matchedPictureId
+        pairs: [
+          { id: "w1", word: "Waiter / Waitress", mean: "Brings food to tables", emoji: "🤵", visualId: "v1" },
+          { id: "w2", word: "Uniform", mean: "Matching clothes worn by staff", emoji: "👔", visualId: "v2" },
+          { id: "w3", word: "Menu", mean: "A list of food with prices", emoji: "📜", visualId: "v3" },
+          { id: "w4", word: "Bowl of soup", mean: "Liquid food in a rounded dish", emoji: "🍲", visualId: "v4" },
+          { id: "w5", word: "Plate of salad", mean: "Fresh cold green vegetables", emoji: "🥗", visualId: "v5" }
+        ],
+        // Pre-randomize lists for fun matching gameplay
+        shuffledWords: [],
+        shuffledVisuals: []
+      },
+      {
+        id: 3,
+        type: "game2",
+        title: "ACTIVITY 2: SENTENCE BUILDER CHAMPION",
+        subtitle: "Reorder the blocks to create correct sentences! Focus on Present Continuous & Present Simple.",
+        challenges: [
+          {
+            prompt: "Describe what the staff usually do vs. what they wear today:",
+            scrambled: ["wear", "usually", "uniforms.", "blue", "They"],
+            correctOrder: ["They", "usually", "wear", "blue", "uniforms."],
+            currentArrangement: [],
+            isFinished: false,
+            badge: "Present Simple (Habit)"
+          },
+          {
+            prompt: "Describe what is happening right now in the restaurant:",
+            scrambled: ["wearing", "today.", "green", "They", "are"],
+            correctOrder: ["They", "are", "wearing", "green", "today."],
+            currentArrangement: [],
+            isFinished: false,
+            badge: "Present Continuous (Now)"
+          },
+          {
+            prompt: "Describe what the customers are having at the moment:",
+            scrambled: ["pizza", "having", "now.", "We", "are"],
+            correctOrder: ["We", "are", "having", "pizza", "now."],
+            currentArrangement: [],
+            isFinished: false,
+            badge: "Present Continuous (Now)"
+          }
+        ],
+        activeChallengeIndex: 0
+      },
+      {
+        id: 4,
+        type: "game3",
+        title: "ACTIVITY 3: GRAMMAR DETECTIVE SELECTOR",
+        subtitle: "Pick the correct form of the verb. Is it a general habit (usually) or happening now (today/now)?",
+        items: [
+          {
+            id: "g1",
+            text: "She usually ________ a glass of milk with breakfast.",
+            options: ["drinks", "is drinking", "drink"],
+            correct: "drinks",
+            selected: null,
+            hint: "Look at: 'usually' (habit)"
+          },
+          {
+            id: "g2",
+            text: "The family are ________ by the door today.",
+            options: ["sits", "sitting", "sit"],
+            correct: "sitting",
+            selected: null,
+            hint: "Look at: 'today' (at the moment)"
+          },
+          {
+            id: "g3",
+            text: "We usually sit by the window, but now we are ________ pizza at Ken's Café.",
+            options: ["have", "having", "has"],
+            correct: "having",
+            selected: null,
+            hint: "Look at: 'now' (at the moment)"
+          },
+          {
+            id: "g4",
+            text: "He never ________ soup for dinner.",
+            options: ["has", "having", "have"],
+            correct: "has",
+            selected: null,
+            hint: "Look at: 'never' (frequency habit)"
+          }
+        ]
+      },
+      {
+        id: 5,
+        type: "congrats",
+        title: "CONGRATULATIONS!",
+        subtitle: "You completed FF4 Unit 1 - Lesson 1!",
+        badge: "Restaurant Master Chef"
+      }
+    ];
+
+    let currentSlideIndex = 0;
+
+    // Initialize Game 1 Shuffled Arrays
+    function initShuffledData() {
+      slidesData.forEach(slide => {
+        if (slide.type === "game1") {
+          slide.shuffledWords = [...slide.pairs].sort(() => Math.random() - 0.5);
+          slide.shuffledVisuals = [...slide.pairs].sort(() => Math.random() - 0.5);
+        }
+        if (slide.type === "game2") {
+          slide.challenges.forEach(challenge => {
+            challenge.currentArrangement = [];
+          });
+        }
+      });
+    }
+
+    // --- ADVANCED NON-RESTRICTIVE TOAST NOTIFICATION ENGINE ---
+    function showNotification(message, type = 'info') {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `transform translate-y-3 opacity-0 transition-all duration-300 ease-out flex items-center space-x-3 px-5 py-3.5 rounded-2xl shadow-xl border text-sm font-bold pointer-events-auto ${
+        type === 'success' 
+          ? 'bg-emerald-50 border-emerald-200 text-emerald-800' 
+          : type === 'error'
+          ? 'bg-rose-50 border-rose-200 text-rose-800'
+          : 'bg-sky-50 border-sky-200 text-sky-800'
+      }`;
+      
+      toast.innerHTML = `
+        <span class="text-lg">${type === 'success' ? '🏆' : type === 'error' ? '❌' : '✨'}</span>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Request repaint to trigger animations
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-3', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-3', 'opacity-0');
+        setTimeout(() => toast.remove(), 350);
+      }, 2500);
+    }
+
+    // --- CLASSROOM SCREEN UTILITY ---
+    function toggleFullscreen() {
+      const elem = document.documentElement;
+      if (!document.fullscreenElement) {
+        elem.requestFullscreen().then(() => {
+          showNotification("Presentation started in Fullscreen.", "info");
+        }).catch(err => {
+          showNotification(`Adapting layout viewport scale inside editor!`, 'info');
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().then(() => {
+            showNotification("Exited presentation mode.", "info");
+          });
+        }
+      }
+    }
+
+    // --- CLASSROOM WHITEBOARD INK DRAWING ENGINE ---
+    const canvas = document.getElementById("drawing-canvas");
+    const ctx = canvas.getContext("2d");
+    let isDrawingActive = false;
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const rectWidth = rect.width || 1024;
+      const rectHeight = rect.height || 576;
+      const scaleX = canvas.width / rectWidth;
+      const scaleY = canvas.height / rectHeight;
+      
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      }
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function initCanvas() {
+      const viewport = document.getElementById("slide-viewport");
+      if (!viewport) return;
+      canvas.width = viewport.clientWidth || 1024;
+      canvas.height = viewport.clientHeight || 576;
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#f97316"; // Friendly classroom neon-orange marker color
+    }
+
+    function startDrawing(e) {
+      if (!isDrawingActive) return;
+      isDrawing = true;
+      const coords = getCanvasCoordinates(e);
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const coords = getCanvasCoordinates(e);
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function stopDrawing() {
+      isDrawing = false;
+    }
+
+    const btnDraw = document.getElementById("btn-draw");
+    const btnClear = document.getElementById("btn-clear-draw");
+
+    btnDraw.addEventListener("click", () => {
+      isDrawingActive = !isDrawingActive;
+      if (isDrawingActive) {
+        canvas.classList.add("drawing-active");
+        btnDraw.classList.replace("bg-slate-100", "bg-orange-500");
+        btnDraw.classList.add("text-white");
+        showNotification("Board Marker active! Draw anywhere on top of slides.", "info");
+      } else {
+        canvas.classList.remove("drawing-active");
+        btnDraw.classList.replace("bg-orange-500", "bg-slate-100");
+        btnDraw.classList.remove("text-white");
+        showNotification("Marker deactivated.", "info");
+      }
+    });
+
+    btnClear.addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      showNotification("Board drawing ink erased!", "info");
+    });
+
+    canvas.addEventListener("mousedown", startDrawing);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", stopDrawing);
+    canvas.addEventListener("mouseleave", stopDrawing);
+
+    canvas.addEventListener("touchstart", (e) => startDrawing(e));
+    canvas.addEventListener("touchmove", (e) => draw(e), { passive: false });
+    canvas.addEventListener("touchend", stopDrawing);
+
+    window.addEventListener("resize", () => {
+      initCanvas();
+    });
+
+    // --- GAME 1 ENGINE: INTERACTIVE MATCH PUZZLE ---
+    function selectWordCard(wordId) {
+      if (isDrawingActive) return;
+      const slide = slidesData[currentSlideIndex];
+      
+      // If already matched, do nothing
+      if (slide.matches[wordId]) return;
+
+      slide.selectedWord = wordId;
+      renderCurrentSlide();
+      showNotification("Word selected! Now click its matching visual card on the right.", "info");
+    }
+
+    function selectVisualCard(visualId) {
+      if (isDrawingActive) return;
+      const slide = slidesData[currentSlideIndex];
+      
+      if (!slide.selectedWord) {
+        showNotification("Please select a word on the left first!", "error");
+        return;
+      }
+
+      const targetPair = slide.pairs.find(p => p.id === slide.selectedWord);
+      
+      if (targetPair.visualId === visualId) {
+        // Correct match!
+        slide.matches[slide.selectedWord] = visualId;
+        slide.selectedWord = null;
+        showNotification(`Correct match: ${targetPair.word}! 🎉`, "success");
+      } else {
+        // Wrong match
+        showNotification("Not quite! Think about the definition. Try again!", "error");
+        slide.selectedWord = null;
+      }
+      
+      renderCurrentSlide();
+    }
+
+    // --- GAME 2 ENGINE: DYNAMIC SCRABBLED WORD TILES ---
+    function appendWordTile(challengeIndex, wordStr) {
+      if (isDrawingActive) return;
+      const challenge = slidesData[currentSlideIndex].challenges[challengeIndex];
+      
+      if (challenge.isFinished) return;
+
+      // Add to current arrangement
+      challenge.currentArrangement.push(wordStr);
+      renderCurrentSlide();
+
+      // Check if arrangement is complete
+      if (challenge.currentArrangement.length === challenge.correctOrder.length) {
+        const isMatch = challenge.currentArrangement.every((w, i) => w === challenge.correctOrder[i]);
+        if (isMatch) {
+          challenge.isFinished = true;
+          showNotification("Excellent grammar structure! Sentence complete! 🌟", "success");
+        } else {
+          showNotification("Sentences aren't in correct order. Try again!", "error");
+          challenge.currentArrangement = [];
+        }
+        renderCurrentSlide();
+      }
+    }
+
+    function resetChallengeWords(challengeIndex) {
+      if (isDrawingActive) return;
+      const challenge = slidesData[currentSlideIndex].challenges[challengeIndex];
+      challenge.currentArrangement = [];
+      challenge.isFinished = false;
+      renderCurrentSlide();
+      showNotification("Blocks reset!", "info");
+    }
+
+    function switchChallenge(index) {
+      slidesData[currentSlideIndex].activeChallengeIndex = index;
+      renderCurrentSlide();
+    }
+
+    // --- GAME 3 ENGINE: GRAMMAR DETECTIVE SELECTOR ---
+    function selectGrammarOption(itemIndex, chosenValue) {
+      if (isDrawingActive) return;
+      const item = slidesData[currentSlideIndex].items[itemIndex];
+      item.selected = chosenValue;
+
+      if (chosenValue === item.correct) {
+        showNotification("Outstanding grammar! Perfectly correct. 🏆", "success");
+      } else {
+        showNotification("Oops! Keep in mind habits vs. actions happening now.", "error");
+      }
+      renderCurrentSlide();
+    }
+
+    // --- PRESENTER MASTER KEY REVEAL SYSTEM ---
+    function revealAllOnSlide() {
+      const slide = slidesData[currentSlideIndex];
+      if (slide.type === "game1") {
+        slide.pairs.forEach(p => {
+          slide.matches[p.id] = p.visualId;
+        });
+        slide.selectedWord = null;
+        showNotification("All vocabulary matching completed!", "success");
+      } else if (slide.type === "game2") {
+        slide.challenges.forEach(ch => {
+          ch.currentArrangement = [...ch.correctOrder];
+          ch.isFinished = true;
+        });
+        showNotification("All scrambled sentences resolved!", "success");
+      } else if (slide.type === "game3") {
+        slide.items.forEach(it => {
+          it.selected = it.correct;
+        });
+        showNotification("Correct verbs populated!", "success");
+      }
+      renderCurrentSlide();
+    }
+
+    // --- CORE DECK RENDER HANDLER ---
+    function renderCurrentSlide() {
+      const slide = slidesData[currentSlideIndex];
+      const root = document.getElementById("slide-content-root");
+      if (!root) return;
+
+      // Update footer indicator
+      document.getElementById("slide-counter-badge").textContent = `Slide ${currentSlideIndex + 1} of ${slidesData.length}`;
+
+      if (slide.type === "cover") {
+        root.innerHTML = `
+          <!-- Top Badge & Premium Logo Sticker from Picture 2 -->
+          <div class="flex justify-between items-start w-full">
+            <span class="bg-amber-100 border border-amber-300 text-amber-800 px-4 py-1.5 rounded-full text-sm font-bold tracking-widest font-display shadow-sm uppercase animate-pulse">
+              ⭐ ${slide.badge}
+            </span>
+            ${amiLogoStickerSVG}
+          </div>
+
+          <!-- Cover Main Content resembling Picture 1 Study Habits Look -->
+          <div class="flex-grow flex items-center justify-between mt-4 w-full">
+            <div class="w-1/2 flex justify-center items-center">
+              <div class="relative w-72 h-72 bg-amber-100 rounded-3xl flex items-center justify-center border-4 border-dashed border-yellow-400 shadow-xl transform -rotate-1 hover:rotate-1 transition-transform duration-500">
+                <div class="text-[120px] filter drop-shadow-xl select-none leading-none">🍕</div>
+                <div class="absolute bottom-5 right-6 text-6xl transform rotate-12">🥤</div>
+                <div class="absolute -top-3 -left-3 text-5xl">🥗</div>
+              </div>
+            </div>
+
+            <div class="w-1/2 flex flex-col items-start space-y-4 pr-6">
+              <span class="text-sky-500 font-extrabold text-2xl tracking-widest font-display uppercase">FAMILY & FRIENDS 4</span>
+              <h1 class="text-4xl lg:text-5xl font-extrabold text-slate-800 leading-tight tracking-wide font-display">
+                THE FOOD HERE IS<br/>
+                <span class="text-orange-500 underline decoration-sky-300 decoration-wavy">GREAT!</span>
+              </h1>
+              <p class="text-slate-500 text-base font-bold">Interactive Lesson One Vocabulary & Grammar Activities</p>
+            </div>
+          </div>
+
+          <!-- Slide bottom lesson map index -->
+          <div class="flex space-x-2 mt-4">
+            <span class="text-xs bg-sky-100 text-sky-700 px-3 py-1 rounded-md font-bold">1. Restaurant Match</span>
+            <span class="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-md font-bold">2. Scrambled Sentences</span>
+            <span class="text-xs bg-amber-100 text-amber-700 px-3 py-1 rounded-md font-bold">3. Present Simple vs Continuous</span>
+          </div>
+        `;
+      }
+
+      else if (slide.type === "game1") {
+        let leftHtml = "";
+        let rightHtml = "";
+
+        // Build word definitions left column
+        slide.shuffledWords.forEach(wItem => {
+          const isMatched = slide.matches[wItem.id];
+          const isSelected = slide.selectedWord === wItem.id;
+          
+          let cardStyle = "bg-white border-slate-200 hover:border-sky-300 hover:shadow-md";
+          if (isMatched) {
+            cardStyle = "bg-emerald-50 border-emerald-400 opacity-70";
+          } else if (isSelected) {
+            cardStyle = "bg-sky-50 border-sky-400 ring-2 ring-sky-300 scale-102";
+          }
+
+          leftHtml += `
+            <div onclick="selectWordCard('${wItem.id}')" 
+              class="border-2 rounded-2xl p-3 shadow-sm cursor-pointer transition-all flex flex-col justify-between h-[84px] select-none ${cardStyle}">
+              <span class="font-extrabold text-slate-800 text-base font-display">${wItem.word}</span>
+              <span class="text-xs text-slate-500 font-medium">${wItem.mean}</span>
+            </div>
+          `;
+        });
+
+        // Build Visual emojis right column
+        slide.shuffledVisuals.forEach(vItem => {
+          // Check if this item is matched to anything
+          const isMatched = Object.values(slide.matches).includes(vItem.visualId);
+          
+          let cardStyle = "bg-white border-slate-200 hover:border-orange-300 hover:shadow-md";
+          if (isMatched) {
+            cardStyle = "bg-emerald-500 border-emerald-500 text-white transform scale-98";
+          }
+
+          rightHtml += `
+            <div onclick="selectVisualCard('${vItem.visualId}')" 
+              class="border-2 rounded-2xl p-2 cursor-pointer transition-all flex flex-col items-center justify-center h-[84px] select-none ${cardStyle}">
+              <span class="text-3xl">${vItem.emoji}</span>
+              ${isMatched ? '<span class="text-[10px] uppercase font-black tracking-widest text-emerald-100 mt-1">Matched ✅</span>' : '<span class="text-[10px] text-slate-400 font-bold mt-1">Click to Pair</span>'}
+            </div>
+          `;
+        });
+
+        root.innerHTML = `
+          <div class="flex justify-between items-start w-full mb-2">
+            <div class="flex flex-col">
+              <span class="bg-sky-100 text-sky-800 px-4 py-1.5 rounded-full text-sm font-bold font-display uppercase tracking-wider shadow-sm">
+                🍽️ ACTIVITY 1: RESTAURANT MATCH QUEST
+              </span>
+              <p class="text-slate-500 text-xs mt-1 font-bold">Select a word card on the left, then click its corresponding emoji match on the right!</p>
+            </div>
+            <button onclick="revealAllOnSlide()" class="bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all">
+              Reveal Matches
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-6 mt-2 flex-grow overflow-hidden">
+            <!-- Left column: words -->
+            <div class="flex flex-col space-y-2 justify-center">
+              ${leftHtml}
+            </div>
+
+            <!-- Right column: visuals -->
+            <div class="grid grid-cols-2 gap-2 content-center">
+              ${rightHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      else if (slide.type === "game2") {
+        const activeIdx = slide.activeChallengeIndex;
+        const chall = slide.challenges[activeIdx];
+
+        // Tabs to select active challenge sentence
+        let tabsHtml = "";
+        slide.challenges.forEach((ch, idx) => {
+          const isActive = idx === activeIdx;
+          const isDone = ch.isFinished;
+          
+          let tabColor = "bg-slate-100 text-slate-600 border-slate-200";
+          if (isActive) {
+            tabColor = "bg-orange-500 text-white border-orange-400";
+          } else if (isDone) {
+            tabColor = "bg-emerald-100 text-emerald-800 border-emerald-200";
+          }
+
+          tabsHtml += `
+            <button onclick="switchChallenge(${idx})" 
+              class="px-4 py-2 rounded-xl text-xs font-black tracking-wider border transition-all ${tabColor}">
+              SENTENCE ${idx + 1} ${isDone ? '✅' : ''}
+            </button>
+          `;
+        });
+
+        // Words remaining that haven't been picked yet
+        const unpickedWords = chall.scrambled.filter(w => !chall.currentArrangement.includes(w));
+
+        root.innerHTML = `
+          <div class="flex justify-between items-start w-full">
+            <div class="flex flex-col">
+              <span class="bg-orange-100 text-orange-800 px-4 py-1.5 rounded-full text-sm font-bold font-display uppercase tracking-wider shadow-sm">
+                📝 ACTIVITY 2: SENTENCE BUILDER TILES
+              </span>
+              <p class="text-slate-500 text-xs mt-1 font-bold">Arrange the tiles into correct Present Simple or Continuous sentences based on Lesson Two grammar!</p>
+            </div>
+            <div class="flex space-x-2">
+              <button onclick="resetChallengeWords(${activeIdx})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs px-4 py-2 rounded-xl shadow-sm transition-all">
+                Reset
+              </button>
+              <button onclick="revealAllOnSlide()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all">
+                Reveal Sentences
+              </button>
+            </div>
+          </div>
+
+          <!-- Sentence Tabs -->
+          <div class="flex space-x-2 mt-3">
+            ${tabsHtml}
+          </div>
+
+          <!-- Core Interactive Work Area -->
+          <div class="flex-grow flex flex-col justify-evenly items-center w-full my-3 bg-white/75 border-2 border-dashed border-orange-200 rounded-3xl p-6">
+            
+            <div class="text-center w-full">
+              <span class="bg-sky-100 text-sky-800 text-[10px] font-extrabold tracking-widest uppercase px-3 py-1 rounded-md mb-2 inline-block">${chall.badge}</span>
+              <p class="text-slate-700 text-sm font-bold mt-1">${chall.prompt}</p>
+            </div>
+
+            <!-- Current Sentence arrangement output lines -->
+            <div class="w-full flex justify-center items-center flex-wrap gap-2 min-h-[64px] border-b-2 border-slate-300 pb-3">
+              ${chall.currentArrangement.length === 0 
+                ? '<span class="text-slate-400 italic text-sm">Click word blocks below to build the sentence...</span>' 
+                : chall.currentArrangement.map(word => `
+                    <span class="bg-orange-100 border-2 border-orange-300 text-orange-800 font-extrabold text-base px-4 py-2 rounded-xl shadow-sm animate-bounce">
+                      ${word}
+                    </span>
+                  `).join('')
+              }
+            </div>
+
+            <!-- Clickable source blocks -->
+            <div class="w-full flex justify-center items-center flex-wrap gap-3">
+              ${chall.isFinished 
+                ? '<div class="text-center text-emerald-600 font-extrabold text-lg flex items-center space-x-2"><span>🎉 Perfect sentence completed! Awesome job!</span></div>' 
+                : unpickedWords.map(word => `
+                    <button onclick="appendWordTile(${activeIdx}, '${word}')"
+                      class="bg-white border-2 border-slate-300 hover:border-sky-400 hover:bg-sky-50 text-slate-800 font-extrabold text-base px-4 py-2.5 rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                      ${word}
+                    </button>
+                  `).join('')
+              }
+            </div>
+
+          </div>
+        `;
+      }
+
+      else if (slide.type === "game3") {
+        let grammarListHtml = "";
+
+        slide.items.forEach((item, index) => {
+          const isCorrect = item.selected === item.correct;
+          const isSelected = item.selected !== null;
+
+          grammarListHtml += `
+            <div class="bg-white/95 border-2 ${isSelected ? (isCorrect ? 'border-emerald-400 bg-emerald-50/20' : 'border-rose-300 bg-rose-50/20') : 'border-slate-200'} rounded-2xl p-3.5 shadow-sm flex items-center justify-between transition-all">
+              
+              <!-- Sentence template and text -->
+              <div class="w-7/12">
+                <p class="font-extrabold text-slate-800 text-sm leading-relaxed">
+                  ${item.text.replace("________", isCorrect 
+                    ? `<span class="text-emerald-600 bg-emerald-100 px-2 rounded-lg underline border-2 border-dashed border-emerald-300 font-display">${item.correct}</span>` 
+                    : `<span class="text-slate-300 px-3 border-b-2 border-dashed border-slate-300">________</span>`
+                  )}
+                </p>
+                <span class="text-[10px] text-slate-400 font-bold uppercase mt-1 inline-block">💡 Hint: ${item.hint}</span>
+              </div>
+
+              <!-- Options selectors -->
+              <div class="flex items-center space-x-1.5">
+                ${item.options.map(opt => {
+                  const isThisOptSelected = item.selected === opt;
+                  let optColor = "bg-slate-100 hover:bg-slate-200 text-slate-700";
+                  if (isThisOptSelected) {
+                    optColor = opt === item.correct ? "bg-emerald-500 text-white" : "bg-rose-500 text-white";
+                  }
+                  return `
+                    <button onclick="selectGrammarOption(${index}, '${opt}')" 
+                      class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${optColor}">
+                      ${opt}
+                    </button>
+                  `;
+                }).join('')}
+                <div class="w-8 flex justify-center text-lg">
+                  ${isSelected ? (isCorrect ? '✅' : '❌') : ''}
+                </div>
+              </div>
+
+            </div>
+          `;
+        });
+
+        root.innerHTML = `
+          <div class="flex justify-between items-start w-full">
+            <div class="flex flex-col">
+              <span class="bg-amber-100 text-amber-800 px-4 py-1.5 rounded-full text-sm font-bold font-display uppercase tracking-wider shadow-sm">
+                🕵️ ACTIVITY 3: GRAMMAR DETECTIVE CHALLENGE
+              </span>
+              <p class="text-slate-500 text-xs mt-1 font-bold">Investigate each sentence structure. Select the accurate verb for habits vs. current events!</p>
+            </div>
+            <button onclick="revealAllOnSlide()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md transition-all">
+              Reveal Verbs
+            </button>
+          </div>
+
+          <!-- Grammar lists -->
+          <div class="flex flex-col space-y-2 mt-3 flex-grow justify-center">
+            ${grammarListHtml}
+          </div>
+        `;
+      }
+
+      else if (slide.type === "congrats") {
+        root.innerHTML = `
+          <div class="flex justify-between w-full">
+            <span class="bg-emerald-100 border border-emerald-300 text-emerald-800 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest font-display shadow-sm uppercase animate-pulse">
+              🏆 Class Champion!
+            </span>
+            ${amiLogoStickerSVG}
+          </div>
+
+          <div class="flex-grow flex flex-col items-center justify-center text-center space-y-6">
+            <!-- Animated Trophy visual element -->
+            <div class="relative transform hover:scale-110 transition-transform duration-500">
+              <div class="text-[120px] filter drop-shadow-2xl animate-bounce">🏆</div>
+              <div class="absolute -top-3 -left-3 text-4xl animate-pulse">🌟</div>
+              <div class="absolute -bottom-3 -right-3 text-4xl animate-pulse delay-300">✨</div>
+            </div>
+
+            <div class="space-y-2">
+              <h1 class="text-5xl font-extrabold text-slate-800 tracking-wide font-display">
+                FANTASTIC WORK!
+              </h1>
+              <p class="text-xl text-sky-500 font-extrabold font-display uppercase tracking-wider">Lesson Activities Complete!</p>
+            </div>
+            
+            <p class="text-slate-500 font-bold text-sm max-w-md">You've mastered restaurant vocabulary words and grammar verb choices today! Superb job.</p>
+          </div>
+        `;
+      }
+
+      renderThumbnails();
+    }
+
+    // --- BOTTOM MAP FOOTER STRIP BUILDER ---
+    function renderThumbnails() {
+      const container = document.getElementById("thumbnail-strip");
+      if (!container) return;
+      container.innerHTML = "";
+
+      slidesData.forEach((slide, idx) => {
+        let titleText = slide.title;
+        if (slide.type === "cover") titleText = "Cover Page";
+        if (slide.type === "congrats") titleText = "Trophy Page";
+
+        const isActive = idx === currentSlideIndex;
+
+        container.innerHTML += `
+          <button onclick="jumpToSlide(${idx})" class="flex-shrink-0 w-44 h-24 rounded-xl overflow-hidden border-4 ${isActive ? 'border-yellow-400 scale-95 ring-2 ring-yellow-400' : 'border-slate-800 hover:border-slate-600'} bg-slate-900 p-2 flex flex-col justify-between text-left transition-all">
+            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-extrabold">Slide ${idx + 1}</span>
+            <span class="text-xs text-white font-extrabold truncate w-full font-display">${titleText}</span>
+            <div class="h-1 w-full bg-slate-800 rounded-full mt-2 overflow-hidden">
+              <div class="h-full bg-orange-400" style="width: ${((idx + 1) / slidesData.length) * 100}%"></div>
+            </div>
+          </button>
+        `;
+      });
+    }
+
+    // --- NAVIGATION HELPERS ---
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        currentSlideIndex--;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCurrentSlide();
+      } else {
+        showNotification("You are on the cover slide!", "info");
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlideIndex < slidesData.length - 1) {
+        currentSlideIndex++;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCurrentSlide();
+      } else {
+        showNotification("You've concluded the activity map!", "success");
+      }
+    }
+
+    function jumpToSlide(index) {
+      if (index >= 0 && index < slidesData.length) {
+        currentSlideIndex = index;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        renderCurrentSlide();
+      }
+    }
+
+    // Connect physical clicker keyboard events
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") prevSlide();
+      if (e.key === "ArrowRight") nextSlide();
+    });
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+      initShuffledData();
+      initCanvas();
+      renderCurrentSlide();
+      showNotification("Welcome to Unit 1 Activity Immersive!", "success");
+    };
+  </script>
+</body>
+</html>
